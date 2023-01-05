@@ -1,11 +1,16 @@
 #include "circular_fifo.h"
 
+/// @brief 初始化
+/// @param buf buffer_t指针
 void buffer_init(buffer_t *const buf)
 {
 	buf->carry = 0;
 	buf->p_read = buf->p_write = buf->array;
 }
 
+/// @brief 不检查是否满，直接压栈
+/// @param buf buffer_t指针
+/// @param topush 要压入的数
 void buffer_forcePush(buffer_t *const buf, const buffer_element_t topush)
 {
 	#ifdef __CIRCULAR_FIFO_DEBUG
@@ -22,6 +27,9 @@ void buffer_forcePush(buffer_t *const buf, const buffer_element_t topush)
 	#endif
 }
 
+/// @brief 不检查是否空，直接弹出
+/// @param buf buffer_t指针
+/// @return 弹出的结果
 buffer_element_t buffer_forcePop(buffer_t *const buf)
 {
 	#ifdef __CIRCULAR_FIFO_DEBUG
@@ -40,6 +48,10 @@ buffer_element_t buffer_forcePop(buffer_t *const buf)
 	return topop;
 }
 
+/// @brief buffer_t转换为字符串
+/// @param charbuffer 字符串缓冲区
+/// @param buf buffer_t指针
+/// @return charbuffer的值
 char *buffer2str(char *const charbuffer, const buffer_t *const buf)
 {
 	sprintf(
