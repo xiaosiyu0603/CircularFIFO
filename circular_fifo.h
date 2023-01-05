@@ -7,77 +7,75 @@
 
 // #define __CIRCULAR_FIFO_DEBUG
 
-#define BUFFER_SIZE	BUFSIZ
-// #define BUFFER_SIZE	3
+#define CircularFIFO_SIZE	BUFSIZ
+// #define CircularFIFO_SIZE	3	// 调试用
 
-typedef uint16_t buffer_element_t;
+typedef uint16_t CircularFIFO_element_t;
 
 // 缓存结构体
-typedef volatile struct _buffer_t
+typedef volatile struct _CircularFIFO
 {
-	volatile buffer_element_t  array[BUFFER_SIZE];	// 接收缓冲
-	volatile buffer_element_t *p_write;				// 缓冲区写指针
-	volatile buffer_element_t *p_read;				// 缓冲区读指针
-	volatile int               carry;				// 循环进位（写指针比读指针多多少次缓冲越界）
-} buffer_t;
+	volatile CircularFIFO_element_t  buffer[CircularFIFO_SIZE];	// 接收缓冲
+	volatile CircularFIFO_element_t *p_write;					// 缓冲区写指针
+	volatile CircularFIFO_element_t *p_read;					// 缓冲区读指针
+	volatile size_t                  carry;						// 循环进位（写指针比读指针多多少次缓冲越界）
+} CircularFIFO;
 
-void buffer_init(buffer_t *const buf);
+void circularFIFO_init(CircularFIFO *const fifo);
 
 /// @brief 判断是否空
-/// @param buf buffer_t指针
+/// @param fifo CircularFIFO指针
 /// @return 是否执行成功
-static inline bool buffer_isEmpty(const buffer_t *const buf)
+static inline bool circularFIFO_isEmpty(const CircularFIFO *const fifo)
 {
-	return (bool)((buf->p_read >= buf->p_write) && (buf->carry <= 0));
+	return (bool)((fifo->p_read >= fifo->p_write) && (fifo->carry <= 0));
 }
 
 /// @brief 判断是否满
-/// @param buf buffer_t指针
+/// @param fifo CircularFIFO指针
 /// @return 是否执行成功
-static inline bool buffer_isFull(const buffer_t *const buf)
+static inline bool circularFIFO_isFull(const CircularFIFO *const fifo)
 {
-	return (bool)((buf->p_write >= buf->p_read) && (buf->carry > 0));
+	return (bool)((fifo->p_write >= fifo->p_read) && (fifo->carry > 0));
 }
 
-void buffer_forcePush(buffer_t *const buf, const buffer_element_t topush);
-
-buffer_element_t buffer_forcePop(buffer_t *const buf);
-
+void circularFIFO_forcePush(CircularFIFO *const fifo, const CircularFIFO_element_t topush);
+CircularFIFO_element_t circularFIFO_forcePop(CircularFIFO *const fifo);
 
 /// @brief 向FIFO压栈
-/// @param buf buffer_t指针
+/// @param fifo CircularFIFO指针
 /// @param topush 要压入的值
 /// @return 是否执行成功
-static inline bool buffer_push(buffer_t *const buf, const buffer_element_t topush)
+static inline bool circularFIFO_push(CircularFIFO *const fifo, const CircularFIFO_element_t topush)
 {
-	if (buffer_isFull(buf))
+	if (circularFIFO_isFull(fifo))
 	{
 		return false;
 	}
 	else
 	{
-		buffer_forcePush(buf, topush);
+		circularFIFO_forcePush(fifo, topush);
 		return true;
 	}
 }
 
 /// @brief 从FIFO弹出
-/// @param buf buffer_t指针
+/// @param fifo CircularFIFO指针
 /// @param p_topop 弹出值的指针
 /// @return 是否执行成功
-static inline bool buffer_pop(buffer_t *const buf, buffer_element_t *const p_topop)
+static inline bool circularFIFO_pop(CircularFIFO *const fifo, CircularFIFO_element_t *const p_topop)
 {
-	if (buffer_isEmpty(buf))
+	if (circularFIFO_isEmpty(fifo))
 	{
 		return false;
 	}
 	else
 	{
-		*p_topop = buffer_forcePop(buf);
+		*p_topop = circularFIFO_forcePop(fifo);
 		return true;
 	}
 }
 
-char *buffer2str(char *const charbuffer, const buffer_t *const buf);
+char *CircularFIFO2str(char *const buffer, const CircularFIFO *const fifo);
 
 #endif // __CIRCULAR_FIFO_H

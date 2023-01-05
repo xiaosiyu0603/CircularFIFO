@@ -6,18 +6,18 @@
 int main()
 {
 	/*
-		BUFFER_SIZE==3 时，
-		输入：u 1 u 2 u 3 u 4 o o o o q
+		CircularFIFO_SIZE==3 时，
+		输入：u 1 u 2 u 3 u 4 u 5 o o o o o q
 	*/
-	buffer_t buf;
+	CircularFIFO fifo;
 
 	char arg1[10];
 	int arg2;
 	char arg1_0;
 	char charbuffer[100];
 
-	buffer_init(&buf);
-	printf("%s\n\n", buffer2str(charbuffer, &buf));
+	circularFIFO_init(&fifo);
+	printf("%s\n\n", CircularFIFO2str(charbuffer, &fifo));
 	do
 	{
 		printf("Input Command \"%%c [%%d]\":\n");
@@ -38,7 +38,7 @@ int main()
 			case 'u':
 			{
 				bool res;
-				res = buffer_push(&buf, arg2);
+				res = circularFIFO_push(&fifo, arg2);
 				if (res == false)
 				{
 					printf("FIFO Full.\n");
@@ -47,14 +47,14 @@ int main()
 			}
 			case 'U':
 			{
-				buffer_forcePush(&buf, arg2);
+				circularFIFO_forcePush(&fifo, arg2);
 				break;
 			}
 			case 'o':
 			{
 				bool res;
-				buffer_element_t pop;
-				res = buffer_pop(&buf, &pop);
+				CircularFIFO_element_t pop;
+				res = circularFIFO_pop(&fifo, &pop);
 				if (res == false)
 				{
 					printf("FIFO Empty.\n");
@@ -67,18 +67,21 @@ int main()
 			}
 			case 'O':
 			{
-				buffer_element_t pop;
-				pop = buffer_forcePop(&buf);
+				CircularFIFO_element_t pop;
+				pop = circularFIFO_forcePop(&fifo);
 				printf("Pop %d.\n", pop);
 				break;
 			}
+			case 'q':
+			case 'Q':
+				break;
 			default:
 			{
 				printf("Invalid command \"%c\"\n", arg1_0);
 			}
 		}
 
-		printf("%s\n\n", buffer2str(charbuffer, &buf));
+		printf("%s\n\n", CircularFIFO2str(charbuffer, &fifo));
 	} while (!((arg1_0 == 'q') || (arg1_0 == 'Q')));
 
 	return 0;
