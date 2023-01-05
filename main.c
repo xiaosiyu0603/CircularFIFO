@@ -5,6 +5,10 @@
 
 int main()
 {
+	/*
+		BUFFER_SIZE==3  ±£¨
+		 ‰»Î£∫u 1 u 2 u 3 u 4 o o o o q
+	*/
 	buffer_t buf;
 
 	char arg1[10];
