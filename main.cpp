@@ -6,11 +6,15 @@ using namespace std;
 
 int main()
 {
+	/*
+		 ‰»Î£∫u 1 u 2 u 3 u 4 u 5 o o o o o q
+	*/
+
 	string arg1;
 	char arg1_0;
 	int arg2;
 
-	CircularFIFO<uint8_t, 3> fifo;
+	CircularFIFO<uint8_t, int8_t, 3> fifo;
 
 	cout << fifo << endl;
 	do

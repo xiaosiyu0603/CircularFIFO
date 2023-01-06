@@ -4,18 +4,18 @@
 #include <stdint.h>
 #include <iostream>
 
-template <typename T, size_t FIFO_SIZE>
+template <typename T, typename S, S FIFO_SIZE>
 class CircularFIFO;
-template <typename T, size_t FIFO_SIZE>
-std::ostream &operator<<(std::ostream &os, const CircularFIFO<T, FIFO_SIZE> &fifo);
+template <typename T, typename S, S FIFO_SIZE>
+std::ostream &operator<<(std::ostream &os, const CircularFIFO<T, S, FIFO_SIZE> &fifo);
 
-template <typename T, size_t FIFO_SIZE = BUFSIZ>
+template <typename T, typename S = size_t, S FIFO_SIZE = BUFSIZ>
 class CircularFIFO
 {
 public:
 	using element_t = T;
-	using index_t = size_t;
-	// static const index_t fifoSize = FIFO_SIZE;
+	using index_t = S;
+	static const index_t fifoSize = FIFO_SIZE;
 
 private:
 	volatile element_t  buffer[FIFO_SIZE];			// 接收缓冲
@@ -33,12 +33,6 @@ public:
 	CircularFIFO(CircularFIFO &other) = delete;
 
 	CircularFIFO(CircularFIFO &&other) = delete;
-
-	inline index_t fifoSize() const
-	{
-		return FIFO_SIZE;
-	}
-
 	/// @brief 判断是否空
 	/// @return 是否空
 	inline bool isEmpty() const
@@ -82,11 +76,11 @@ public:
 		}
 	}
 
-	friend std::ostream &operator<< <>(std::ostream &os, const CircularFIFO<T, FIFO_SIZE> &fifo);
+	friend std::ostream &operator<< <>(std::ostream &os, const CircularFIFO<T, S, FIFO_SIZE> &fifo);
 };
 
-template <typename T, size_t FIFO_SIZE>
-void CircularFIFO<T, FIFO_SIZE>::forcePush(const element_t topush)
+template <typename T, typename S, S FIFO_SIZE>
+void CircularFIFO<T, S, FIFO_SIZE>::forcePush(const element_t topush)
 {
 	*(this->p_write++) = (element_t)topush;
 	if (this->p_write - this->buffer >= FIFO_SIZE) // 越过缓存边界
@@ -97,8 +91,8 @@ void CircularFIFO<T, FIFO_SIZE>::forcePush(const element_t topush)
 	return;
 }
 
-template <typename T, size_t FIFO_SIZE>
-typename CircularFIFO<T, FIFO_SIZE>::element_t CircularFIFO<T, FIFO_SIZE>::forcePop()
+template <typename T, typename S, S FIFO_SIZE>
+typename CircularFIFO<T, S, FIFO_SIZE>::element_t CircularFIFO<T, S, FIFO_SIZE>::forcePop()
 {
 	element_t topop;
 	topop = *(this->p_read++);
@@ -111,16 +105,20 @@ typename CircularFIFO<T, FIFO_SIZE>::element_t CircularFIFO<T, FIFO_SIZE>::force
 }
 
 
-template <typename T, size_t FIFO_SIZE>
-std::ostream &operator<<(std::ostream &os, const CircularFIFO<T, FIFO_SIZE> &fifo)
+template <typename T, typename S, S FIFO_SIZE>
+std::ostream &operator<<(std::ostream &os, const CircularFIFO<T, S, FIFO_SIZE> &fifo)
 {
-	os	<< "CircularFIFO(wp=" << fifo.p_write - fifo.buffer
-		<< ", rp=" << fifo.p_read - fifo.buffer
+	os	<< "CircularFIFO(wp=" << std::showpos << fifo.p_write - fifo.buffer
+		<< ", rp=" << fifo.p_read - fifo.buffer << std::noshowpos
 		<< ", cry=" << fifo.carry
 		<< ", Full=" << fifo.isFull()
 		<< ", Empty=" << fifo.isEmpty()
 		<< ")";
 	return os;
 }
+
+// TODO:
+// template <typename T, size_t FIFO_SIZE>
+// using CircularFIFO<T,FIFO_SIZE> = CircularFIFO<T, size_t, FIFO_SIZE>;
 
 #endif // __CIRCULAR_FIFO
