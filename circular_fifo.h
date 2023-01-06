@@ -1,6 +1,11 @@
 #ifndef __CIRCULAR_FIFO_H
 #define __CIRCULAR_FIFO_H
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -25,7 +30,7 @@ void circularFIFO_init(CircularFIFO *const fifo);
 
 /// @brief 判断是否空
 /// @param fifo CircularFIFO指针
-/// @return 是否执行成功
+/// @return 是否空
 static inline bool circularFIFO_isEmpty(const CircularFIFO *const fifo)
 {
 	return (bool)((fifo->p_read >= fifo->p_write) && (fifo->carry <= 0));
@@ -33,7 +38,7 @@ static inline bool circularFIFO_isEmpty(const CircularFIFO *const fifo)
 
 /// @brief 判断是否满
 /// @param fifo CircularFIFO指针
-/// @return 是否执行成功
+/// @return 是否满
 static inline bool circularFIFO_isFull(const CircularFIFO *const fifo)
 {
 	return (bool)((fifo->p_write >= fifo->p_read) && (fifo->carry > 0));
@@ -77,5 +82,9 @@ static inline bool circularFIFO_pop(CircularFIFO *const fifo, CircularFIFO_eleme
 }
 
 char *CircularFIFO2str(char *const buffer, const CircularFIFO *const fifo);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // __CIRCULAR_FIFO_H

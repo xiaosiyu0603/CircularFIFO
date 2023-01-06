@@ -1,0 +1,126 @@
+#ifndef __CIRCULAR_FIFO
+#define __CIRCULAR_FIFO
+
+#include <stdint.h>
+#include <iostream>
+
+template <typename T, size_t FIFO_SIZE>
+class CircularFIFO;
+template <typename T, size_t FIFO_SIZE>
+std::ostream &operator<<(std::ostream &os, const CircularFIFO<T, FIFO_SIZE> &fifo);
+
+template <typename T, size_t FIFO_SIZE = BUFSIZ>
+class CircularFIFO
+{
+public:
+	using element_t = T;
+	using index_t = size_t;
+	// static const index_t fifoSize = FIFO_SIZE;
+
+private:
+	volatile element_t  buffer[FIFO_SIZE];			// 接收缓冲
+	volatile element_t *p_write;					// 缓冲区写指针
+	volatile element_t *p_read;						// 缓冲区读指针
+	volatile index_t    carry;						// 循环进位（写指针比读指针多多少次缓冲越界）
+
+public:
+
+	CircularFIFO() : carry(0), p_read(buffer), p_write(buffer)
+	{
+		return;
+	}
+
+	CircularFIFO(CircularFIFO &other) = delete;
+
+	CircularFIFO(CircularFIFO &&other) = delete;
+
+	inline index_t fifoSize() const
+	{
+		return FIFO_SIZE;
+	}
+
+	/// @brief 判断是否空
+	/// @return 是否空
+	inline bool isEmpty() const
+	{
+		return ((this->p_read >= this->p_write) && (this->carry <= 0));
+	}
+
+	/// @brief 判断是否满
+	/// @return 是否满
+	inline bool isFull() const
+	{
+		return ((this->p_write >= this->p_read) && (this->carry > 0));
+	}
+
+	void forcePush(const element_t topush);
+	element_t forcePop();
+
+	inline bool push(const element_t topush)
+	{
+		if (isFull())
+		{
+			return false;
+		}
+		else
+		{
+			forcePush(topush);
+			return true;
+		}
+	}
+
+	inline bool pop(element_t *const p_topop)
+	{
+		if (isEmpty())
+		{
+			return false;
+		}
+		else
+		{
+			*p_topop = forcePop();
+			return true;
+		}
+	}
+
+	friend std::ostream &operator<< <>(std::ostream &os, const CircularFIFO<T, FIFO_SIZE> &fifo);
+};
+
+template <typename T, size_t FIFO_SIZE>
+void CircularFIFO<T, FIFO_SIZE>::forcePush(const element_t topush)
+{
+	*(this->p_write++) = (element_t)topush;
+	if (this->p_write - this->buffer >= FIFO_SIZE) // 越过缓存边界
+	{
+		this->p_write = this->buffer;
+		this->carry++;
+	}
+	return;
+}
+
+template <typename T, size_t FIFO_SIZE>
+typename CircularFIFO<T, FIFO_SIZE>::element_t CircularFIFO<T, FIFO_SIZE>::forcePop()
+{
+	element_t topop;
+	topop = *(this->p_read++);
+	if (this->p_read - this->buffer >= FIFO_SIZE) // 读指针超出缓冲区
+	{
+		this->p_read = this->buffer;
+		this->carry--;
+	}
+	return topop;
+}
+
+
+template <typename T, size_t FIFO_SIZE>
+std::ostream &operator<<(std::ostream &os, const CircularFIFO<T, FIFO_SIZE> &fifo)
+{
+	os	<< "CircularFIFO(wp=" << fifo.p_write - fifo.buffer
+		<< ", rp=" << fifo.p_read - fifo.buffer
+		<< ", cry=" << fifo.carry
+		<< ", Full=" << fifo.isFull()
+		<< ", Empty=" << fifo.isEmpty()
+		<< ")";
+	return os;
+}
+
+#endif // __CIRCULAR_FIFO
